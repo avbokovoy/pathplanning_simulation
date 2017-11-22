@@ -1,13 +1,16 @@
+#!/usr/bin/env python
 # coding=utf-8
+
+import rospy
 
 import os
 import xml.etree.ElementTree as et
 import stringtemplate3 as st
 import csv
 import stat
-# import rospkg
+import rospkg
 
-head = '<launch>\n  <arg name="world_file"  default= "$(find pathplanning_gazebo)/world/playground.world"/>\n  <arg name="base" value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- create, roomba --> \n  <arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 -->\n  <arg name="gui" default="true"/>\n  <arg name="stacks"    value="$(optenv TURTLEBOT_STACKS hexagons)"/>  <!-- circles, hexagons -->\n  <arg name="3d_sensor" value="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->\n  <include file="$(find gazebo_ros)/launch/empty_world.launch">\n    <arg name="use_sim_time" value="true"/>\n    <arg name="debug" value="false"/>\n    <arg name="gui" value="$(arg gui)" />\n    <arg name="world_name" value="$(arg world_file)"/>\n  </include>\n'
+head = '<launch>\n  <arg name="world_file"  default= "$(find pathplanning_gazebo)/worlds/playground.world"/>\n  <arg name="base" value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- create, roomba --> \n  <arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 -->\n  <arg name="gui" default="true"/>\n  <arg name="stacks"    value="$(optenv TURTLEBOT_STACKS hexagons)"/>  <!-- circles, hexagons -->\n  <arg name="3d_sensor" value="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->\n  <include file="$(find gazebo_ros)/launch/empty_world.launch">\n    <arg name="use_sim_time" value="true"/>\n    <arg name="debug" value="false"/>\n    <arg name="gui" value="$(arg gui)" />\n    <arg name="world_name" value="$(arg world_file)"/>\n  </include>\n'
 bottom = '  \n  <!-- Fake laser -->\n  <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>\n  <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"\n        args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet laserscan_nodelet_manager">\n    <param name="scan_height" value="10"/>\n    <param name="output_frame_id" value="/camera_depth_frame"/>\n    <param name="range_min" value="0.45"/>\n    <remap from="image" to="/camera/depth/image_raw"/>\n    <remap from="scan" to="/scan"/>\n  </node>\n</launch>'
 
 
@@ -71,7 +74,7 @@ def get_all_commands_for_all_agents():
         robot_name = 'robot_' + agentnumber
         addNewRobot(robot_name, startx, starty)
         robot_filename = agentnumber + '.csv'
-        with open(os.path.join(path_to_input, "gazebo/commands",robot_filename), "w") as f:
+        with open(os.path.join(path_to_input, "pathplanning_gazebo/commands",robot_filename), "w") as f:
             columns = ["startx", "starty", "finishx", "finishy", "length"]
             writer = csv.DictWriter(f, fieldnames=columns)
             writer.writerows(params)
@@ -84,17 +87,19 @@ def generate_sh():
 
     with open(os.path.join(path_to_input, "run_robots.sh"), "w") as run:
         run.write(sh_string)
-        st=os.stat(path_to_input+"/run_agents.sh")
-        os.chmod(path_to_input+"/run_agents.sh", st.st_mode|stat.S_IEXEC)
+        st=os.stat(path_to_input+"/run_robots.sh")
+        os.chmod(path_to_input+"/run_robots.sh", st.st_mode|stat.S_IEXEC)
 
     print("run_robots.sh has been generated successfully in \"~/catkin_ws/src\" directory")
 
-base_path = os.path.abspath("catkin_ws/src/gazebo")
-# ros_package = rospkg.RosPack()
-# base_path = ros_package.get_path( "pathplanning_gazebo" )
+rospy.init_node( 'pathplanning_generator' )
+
+#base_path = os.path.abspath("catkin_ws/src/gazebo")
+rospack = rospkg.RosPack()
+base_path = rospack.get_path('pathplanning_gazebo')
 path_to_input = os.path.dirname(base_path)
 generator_path = os.path.dirname(os.path.realpath(__file__))
-filename = os.path.join(path_to_input,"gazebo/input", (raw_input("type filename :")))
+filename = os.path.join(path_to_input,"pathplanning_gazebo/input", (raw_input("type filename :")))
 
 xml_file = ""
 try:
@@ -103,7 +108,7 @@ except NameError as e:
     print (e.message)
 
 root = et.parse(xml_file)
-path = os.path.join(base_path, 'parsing/data')
+path = os.path.join(base_path, 'data')
 group = st.StringTemplateGroup("Supergroup", path)
 preset = group.getInstanceOf("preset")
 
@@ -136,13 +141,15 @@ get_grid()
 
 preset['models'] = models
 launch_preset['robots'] = robots
-with open(os.path.join(path_to_input, "gazebo/world", "playground.world"), "w") as tf:
+with open(os.path.join(path_to_input, "pathplanning_gazebo/world", "playground.world"), "w") as tf:
     tf.write(preset.toString())
 print('playground.world has been generated successfully')
 
-with open(os.path.join(path_to_input, "gazebo/launch", "turtlebot_world.launch"), "w") as world:
+with open(os.path.join(path_to_input, "pathplanning_gazebo/launch", "turtlebot_world.launch"), "w") as world:
     string = head + '\n' + launch_preset.toString() + '\n' + bottom
     world.write(string)
 print('turtlebot_world.launch has been generated successfully\nNow you can run it by \"./run_robots.sh\"\n do not forget make it readable by chmod u+x!')
 
 generate_sh()
+
+rospy.signal_shutdown("Program is finished")
