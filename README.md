@@ -26,3 +26,9 @@ rosrun pathplanning_generator world_generator.py
 ```bash
 roslaunch pathplanning_gazebo turtlebot_world.launch
 ```
+
+3) Run pathplanning_mover2 (work in progress)
+
+```bash
+rosrun pathplanning_mover2 ...
+```
