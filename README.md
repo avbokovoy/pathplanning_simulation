@@ -11,7 +11,7 @@ cd {path_to_your_catkin_workspace}/src
 git clone https://github.com/avbokovoy/pathplanning_simulation.git
 cd ..
 catkin_make
-[code]
+[/code]
 
 # Run
 
@@ -19,10 +19,10 @@ catkin_make
 
 [code language="bash"]
 rosrun pathplanning_generator world_generator.py
-[code]
+[/code]
 
 2) Run simulation 
 
 [code language="bash"]
 roslaunch pathplanning_gazebo turtlebot_world.launch
-[code]
+[/code]
