@@ -89,7 +89,7 @@ def generate_sh():
 
     print("run_robots.sh has been generated successfully in \"~/catkin_ws/src\" directory")
 
-base_path = os.path.abspath("~/Workspace/catkin_ws/src/pathplanning_simulation/pathplanning_gazebo")
+base_path = os.path.abspath("catkin_ws/src/gazebo")
 # ros_package = rospkg.RosPack()
 # base_path = ros_package.get_path( "pathplanning_gazebo" )
 path_to_input = os.path.dirname(base_path)
