@@ -2,6 +2,12 @@
 
 # Prerequisites
 
+Antlr
+
+```bash
+sudo apt install python-antlr
+```
+
 TODO: Complete
 
 # Compile
