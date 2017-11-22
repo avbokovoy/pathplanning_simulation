@@ -65,8 +65,6 @@ $ sudo apt install python-stringtemplate3
 $ sudo apt install python-antlr
 ```
 
-TODO: Complete
-
 # Compile pathplanning_simulation
 
 ### Optional: Install git
@@ -86,10 +84,11 @@ $ catkin_make
 
 # Run
 
-1) Generate world file 
+1) Generate world and launch files
 
 ```bash
-$ rosrun pathplanning_generator world_generator.py
+$ roslaunch pathplanning_generator generate_world.launch
+$ Ctrl+c
 ```
 
 2) Run simulation 
