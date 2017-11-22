@@ -141,7 +141,7 @@ get_grid()
 
 preset['models'] = models
 launch_preset['robots'] = robots
-with open(os.path.join(path_to_input, "pathplanning_gazebo/world", "playground.world"), "w") as tf:
+with open(os.path.join(path_to_input, "pathplanning_gazebo/worlds", "playground.world"), "w") as tf:
     tf.write(preset.toString())
 print('playground.world has been generated successfully')
 
